@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LART Gallery | Linktree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { height: 100%; }
+
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background-color: #D8D8D6;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 0;
+    }
+
+    /* ── Profile (on gray background) ── */
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+      padding: 0 24px 28px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid rgba(255,255,255,0.6);
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+      letter-spacing: -0.01em;
+    }
+
+    .profile-bio {
+      font-size: 15px;
+      font-weight: 400;
+      color: #1a1a1a !important;
+      line-height: 1.5;
+      text-decoration: none;
+      -webkit-text-fill-color: #1a1a1a;
+    }
+
+    /* ── White card column ── */
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 420px;
+      padding-bottom: 32px;
+    }
+
+    /* ── Top bar inside card ── */
+    .card-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 8px;
+    }
+
+    .topbar-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #1a1a1a;
+      transition: background 0.15s;
+    }
+
+    .topbar-btn:hover { background: rgba(0,0,0,0.06); }
+
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 999px;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Sections ── */
+    .links-section {
+      padding: 8px 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #1a1a1a;
+      text-align: center;
+      padding: 8px 0 2px;
+    }
+
+    /* ── Artist button ── */
+    .artist-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f9f9f9;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 10px 10px 10px 16px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      text-align: left;
+      width: 100%;
+      gap: 12px;
+      color: #1a1a1a;
+      font-family: inherit;
+    }
+
+    .artist-btn:hover { background: #f0f0f0; }
+    .artist-btn:active { transform: scale(0.985); }
+
+    .artist-btn-text { flex: 1; min-width: 0; }
+
+    .artist-btn-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .artist-btn-meta {
+      font-size: 12px;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    .artist-btn-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    /* ── Social icons ── */
+    .social-icons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      padding: 24px 0 8px;
+    }
+
+    .social-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      text-decoration: none;
+      transition: opacity 0.15s;
+      color: #1a1a1a;
+    }
+
+    .social-icon:hover { opacity: 0.7; }
+    .social-icon svg { width: 32px; height: 32px; }
+
+    /* ── Modal overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 100;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .overlay.open {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal {
+      background: #fff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px 20px 0 0;
+      overflow: hidden;
+      animation: slideUp 0.3s ease;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      z-index: 10;
+    }
+
+    .modal-header-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .modal-header-meta {
+      font-size: 12px;
+      color: #666;
+    }
+
+    .modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+
+    .modal-close:hover { background: #f0f0f0; }
+
+    .modal-cover {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+
+    .modal-body {
+      padding: 20px 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.3;
+      text-decoration: underline;
+      text-decoration-color: rgba(0,0,0,0.2);
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    .modal-title:hover { text-decoration-color: rgba(0,0,0,0.6); }
+
+    .modal-by {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .modal-by-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .modal-price {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    .modal-download {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      width: 100%;
+      justify-content: center;
+      transition: opacity 0.15s;
+    }
+
+    .modal-download:hover { opacity: 0.85; }
+
+    .modal-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.6;
+      text-align: left;
+      width: 100%;
+    }
+
+    .modal-files { width: 100%; text-align: left; }
+
+    .modal-files-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+
+    .modal-file-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(0,0,0,0.07);
+    }
+
+    .modal-file-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: #f3f3f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal-file-name {
+      font-size: 13px;
+      color: #1a1a1a;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .modal-file-type { font-size: 11px; color: #888; }
+  </style>
+</head>
+<body>
+
+  <!-- Profile on gray background -->
+  <div class="profile">
+    <img class="avatar" src="assets/images/avatar.jpeg" alt="LART Gallery">
+    <h1 class="profile-name">LART Gallery</h1>
+    <p class="profile-bio">Leading international gallery for multiple works by 20th century Masters.</p>
+  </div>
+
+  <!-- White card column -->
+  <div class="card">
+
+    <!-- Top bar -->
+    <div class="card-topbar">
+      <div></div>
+      <button class="topbar-btn" id="copy-btn" aria-label="Copy link" onclick="copyLink()">
+        <svg id="copy-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contemporary Art Collection -->
+    <div class="links-section">
+      <div class="section-label">Contemporary Art Collection</div>
+      <button class="artist-btn" onclick="openModal('alberto')">
+        <div class="artist-btn-text">
+          <div class="artist-btn-name">Alberto La Tassa</div>
+          <div class="artist-btn-meta">1 file • Free</div>
+        </div>
+        <img class="artist-btn-thumb" src="assets/images/alberto-la-tassa.jpeg" alt="Alberto La Tassa">
+      </button>
+      <button class="artist-btn" onclick="openModal('femke')">
+        <div class="artist-btn-text">
+          <div class="artist-btn-name">Femke de Groot</div>
+          <div class="artist-btn-meta">1 file • Free</div>
+        </div>
+        <img class="artist-btn-thumb" src="assets/images/femke-de-groot.jpeg" alt="Femke de Groot">
+      </button>
+      <button class="artist-btn" onclick="openModal('leonardo')">
+        <div class="artist-btn-text">
+          <div class="artist-btn-name">Leonardo Cappellini</div>
+          <div class="artist-btn-meta">1 file • Free</div>
+        </div>
+        <img class="artist-btn-thumb" src="assets/images/leonardo-cappellini.jpeg" alt="Leonardo Cappellini">
+      </button>
+    </div>
+
+    <!-- Modern Art Collection -->
+    <div class="links-section">
+      <div class="section-label">Modern Art Collection</div>
+      <button class="artist-btn" onclick="openModal('salvador')">
+        <div class="artist-btn-text">
+          <div class="artist-btn-name">Salvador Dalì</div>
+          <div class="artist-btn-meta">1 file • Free</div>
+        </div>
+        <img class="artist-btn-thumb" src="assets/images/salvador-dali.jpeg" alt="Salvador Dalì">
+      </button>
+      <button class="artist-btn" onclick="openModal('picasso')">
+        <div class="artist-btn-text">
+          <div class="artist-btn-name">Pablo Picasso</div>
+          <div class="artist-btn-meta">1 file • Free</div>
+        </div>
+        <img class="artist-btn-thumb" src="assets/images/pablo-picasso.jpeg" alt="Pablo Picasso">
+      </button>
+      <button class="artist-btn" onclick="openModal('chagall')">
+        <div class="artist-btn-text">
+          <div class="artist-btn-name">Marc Chagall</div>
+          <div class="artist-btn-meta">1 file • Free</div>
+        </div>
+        <img class="artist-btn-thumb" src="assets/images/marc-chagall.jpeg" alt="Marc Chagall">
+      </button>
+    </div>
+
+    <!-- Social icons -->
+    <div class="social-icons">
+      <a href="https://www.instagram.com/lartgallery_official" target="_blank" class="social-icon" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+        </svg>
+      </a>
+      <a href="https://api.whatsapp.com/send?phone=393758130200" target="_blank" class="social-icon" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </a>
+    </div>
+
+  </div><!-- end card -->
+
+<div class="toast" id="toast">Link copied!</div>
+
+<!-- Modal overlay -->
+<div class="overlay" id="overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-header-title" id="modal-header-title"></div>
+        <div class="modal-header-meta">1 File • Free</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+        </svg>
+      </button>
+    </div>
+    <img class="modal-cover" id="modal-cover" src="" alt="">
+    <div class="modal-body">
+      <a class="modal-title" id="modal-title" href="#" download></a>
+      <div class="modal-by">
+        <img class="modal-by-avatar" src="assets/images/avatar.jpeg" alt="lartgallery">
+        <span>by lartgallery</span>
+      </div>
+      <div class="modal-price">Free</div>
+      <a class="modal-download" id="modal-download" href="#" download>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download
+      </a>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-files">
+        <div class="modal-files-label">Files</div>
+        <a class="modal-file-row" id="modal-file-row" href="#" download style="text-decoration:none;color:inherit;cursor:pointer;">
+          <div class="modal-file-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <div class="modal-file-name" id="modal-file-name"></div>
+            <div class="modal-file-type">PDF</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const artists = {
+    alberto: {
+      name: 'Alberto La Tassa',
+      title: 'Alberto La Tassa - Catalogue 2026',
+      image: 'assets/images/alberto-la-tassa.jpeg',
+      pdf: 'assets/pdfs/Alberto La Tassa - Catalogue 2026.pdf',
+      file: 'Alberto La Tassa - Catalogue 2026.pdf',
+      desc: 'This catalog showcases the contemporary art collection of Alberto La Tassa, featuring oil paintings and mixed media pieces with descriptions and pricing for each work. Explore the artist\'s unique style and diverse range of techniques.'
+    },
+    femke: {
+      name: 'Femke de Groot',
+      title: 'Femke de Groot - Catalogue 2026',
+      image: 'assets/images/femke-de-groot.jpeg',
+      pdf: 'assets/pdfs/Femke de Groot - Catalogue 2026.pdf',
+      file: 'Femke de Groot - Catalogue 2026.pdf',
+      desc: 'Discover the contemporary works of Femke de Groot — a compelling collection of paintings and mixed media with detailed descriptions and pricing for collectors and art enthusiasts.'
+    },
+    leonardo: {
+      name: 'Leonardo Cappellini',
+      title: 'Leonardo Cappellini - Art Gallery 2026',
+      image: 'assets/images/leonardo-cappellini.jpeg',
+      pdf: 'assets/pdfs/Leonardo Cappellini - Art Gallery 2026.pdf',
+      file: 'Leonardo Cappellini - Art Gallery 2026.pdf',
+      desc: 'A curated selection of works by Leonardo Cappellini, presented by LART Gallery. This catalogue offers a comprehensive view of the artist\'s current production, with pricing and detailed notes.'
+    },
+    salvador: {
+      name: 'Salvador Dalì',
+      title: 'Salvador Dalí - Graphic Artworks 2026',
+      image: 'assets/images/salvador-dali.jpeg',
+      pdf: 'assets/pdfs/Salvador Dalí - Graphic Artworks 2026.pdf',
+      file: 'Salvador Dalí - Graphic Artworks 2026.pdf',
+      desc: 'An exclusive selection of graphic artworks by Salvador Dalí, one of the most iconic figures of Surrealism. This catalogue documents authenticated works available through LART Gallery.'
+    },
+    picasso: {
+      name: 'Pablo Picasso',
+      title: 'Pablo Picasso - Catalogue 2026',
+      image: 'assets/images/pablo-picasso.jpeg',
+      pdf: 'assets/pdfs/Pablo Picasso - Catalogue 2026.pdf',
+      file: 'Pablo Picasso - Catalogue 2026.pdf',
+      desc: 'A prestigious selection of works by Pablo Picasso, spanning multiple periods of his legendary career. Each piece is documented with provenance, medium and pricing information.'
+    },
+    chagall: {
+      name: 'Marc Chagall',
+      title: 'Marc Chagall - Artworks Catalogue 2026',
+      image: 'assets/images/marc-chagall.jpeg',
+      pdf: 'assets/pdfs/Marc Chagall - Artworks Catalogue 2026.pdf',
+      file: 'Marc Chagall - Artworks Catalogue 2026.pdf',
+      desc: 'Explore the dreamlike and poetic universe of Marc Chagall through this curated catalogue of artworks, presented by LART Gallery with full documentation and pricing.'
+    }
+  };
+
+  function openModal(id) {
+    const a = artists[id];
+    document.getElementById('modal-header-title').textContent = a.name;
+    const titleEl = document.getElementById('modal-title');
+    titleEl.textContent = a.title;
+    titleEl.href = a.pdf;
+    titleEl.download = a.file;
+    document.getElementById('modal-cover').src = a.image;
+    document.getElementById('modal-cover').alt = a.title;
+    document.getElementById('modal-download').href = a.pdf;
+    const fileRow = document.getElementById('modal-file-row');
+    fileRow.href = a.pdf;
+    fileRow.download = a.file;
+    document.getElementById('modal-desc').textContent = a.desc;
+    document.getElementById('modal-file-name').textContent = a.file;
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function closeModalOnOverlay(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  function copyLink() {
+    const url = 'https://tommyiaq.github.io/lartgallery/';
+
+    const confirm = () => {
+      const btn = document.getElementById('copy-btn');
+      const toast = document.getElementById('toast');
+      btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>`;
+      }, 2000);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(confirm);
+    } else {
+      const el = document.createElement('textarea');
+      el.value = url;
+      el.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      try { document.execCommand('copy'); confirm(); } catch(e) {}
+      document.body.removeChild(el);
+    }
+  }
+</script>
+</body>
+</html>

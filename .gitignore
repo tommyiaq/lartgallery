@@ -1,0 +1,13 @@
+# Claude Code
+.claude/settings.local.json
+
+# Playwright MCP output
+.playwright-mcp/
+
+# Temp scraping files
+linktree-source.html
+*.png
+
+.mcp.json
+.claude
+CLAUDE_PLAYWRIGHT.md
